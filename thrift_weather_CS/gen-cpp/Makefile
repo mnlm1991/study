@@ -1,7 +1,7 @@
 
 objects = weather_constants.o weather.o weather_server.o weather_types.o
 server : $(objects)
-	g++ -o server -lthrift $(objects)
+	g++ -o server -lthrift -lboost_thread-mt $(objects)
 	
 # pull in dependency info for *existing* .o files
 -include $(objects:.o=.d)

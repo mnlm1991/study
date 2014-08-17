@@ -10,6 +10,10 @@
 #include <vector>
 #include <sstream>
 #include <string>
+#include <boost/thread.hpp>
+#include <boost/smart_ptr/shared_ptr.hpp>
+#include <boost/date_time/posix_time/posix_time.hpp>
+#include <unistd.h>
 
 using namespace ::apache::thrift;
 using namespace ::apache::thrift::protocol;
@@ -49,6 +53,13 @@ class weatherHandler : virtual public weatherIf {
 			{
 				_return = weather_list_[find_it->second];
 			}
+		}
+		bool init()
+		{
+			if (!gen_data()) return false;
+			update_ = true;
+			update_thread_.reset(new boost::thread(boost::bind(&weatherHandler::update_callback, this)));
+			return true;
 		}
 		void parse_file(const char * file)
 		{
@@ -90,16 +101,36 @@ class weatherHandler : virtual public weatherIf {
 		private:
 			weatherHandler * this_;
 		};
+		void update_callback()
+		{
+			while (update_)
+			{
+				gen_data();
+				parse_file("/tmp/weather.data");
+				boost::this_thread::sleep(boost::posix_time::minutes(15));
+			}
+		}
+		bool gen_data()
+		{
+			system("../../fetch_weather/fetch_weather.py > /tmp/weather.data");
+			return access("/tmp/weather.data", W_OK) == 0;
+		}
 	private:
 		weather_info_list_t weather_list_;
 		weather_map_t city_weahter_map_;
 		std::vector<int> sorted_index_;
+		boost::shared_ptr<boost::thread> update_thread_;
+		bool update_;
 };
 
 int main(int argc, char **argv) {
 	int port = 9090;
 	shared_ptr<weatherHandler> handler(new weatherHandler());
-	handler->parse_file("/tmp/weather.data");
+	if (!handler->init()) 
+	{
+		std::cout << "初始化失败" << std::endl;
+		return 0;
+	}
 	shared_ptr<TProcessor> processor(new weatherProcessor(handler));
 	shared_ptr<TServerTransport> serverTransport(new TServerSocket(port));
 	shared_ptr<TTransportFactory> transportFactory(new TBufferedTransportFactory());
