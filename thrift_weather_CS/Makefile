@@ -1,8 +1,13 @@
+gen_dep = gen-cpp/weather_server.skeleton.cpp
 
 .PHONY : server
-server : 
-	@make -C gen-cpp
+server : $(gen_dep)
+	@make -C server
 
-.PHONY : gen
-gen : weatherCS.thrift
+$(gen_dep) : weatherCS.thrift
 	thrift --gen cpp --gen py weatherCS.thrift
+
+.PHONY : clean
+clean :
+	@make -C server clean
+	-rm -rf gen-cpp/ gen-py/
