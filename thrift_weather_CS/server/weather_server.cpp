@@ -12,6 +12,8 @@
 #include <boost/smart_ptr/shared_ptr.hpp>
 #include <boost/date_time/posix_time/posix_time.hpp>
 #include <unistd.h>
+#include <sys/types.h>
+#include <sys/stat.h>
 
 using namespace ::apache::thrift;
 using namespace ::apache::thrift::protocol;
@@ -54,7 +56,7 @@ class weatherHandler : virtual public weatherIf {
 		}
 		bool init()
 		{
-			if (!gen_data()) return false;
+			if (!read_data()) return false;
 			update_ = true;
 			update_thread_.reset(new boost::thread(boost::bind(&weatherHandler::update_callback, this)));
 			return true;
@@ -66,6 +68,8 @@ class weatherHandler : virtual public weatherIf {
 			weather_info info;
 			city_weahter_map_.clear();
 			weather_list_.clear();
+			sorted_index_.clear();
+			system("touch /tmp/is_parse_weather");
 			while ( std::getline(std::cin, line_str))
 			{
 				std::stringstream ss;
@@ -76,6 +80,7 @@ class weatherHandler : virtual public weatherIf {
 				city_weahter_map_[info.city_id] = weather_list_.size();
 				weather_list_.push_back(info);
 			}
+			system("rm -f /tmp/is_parse_weather");
 			std::sort(sorted_index_.begin(), sorted_index_.end(), sort_weather_cmp(this));
 			freopen("/dev/tty", "r", stdin);
 		}
@@ -103,15 +108,26 @@ class weatherHandler : virtual public weatherIf {
 		{
 			while (update_)
 			{
-				gen_data();
-				parse_file("/tmp/weather.data");
-				boost::this_thread::sleep(boost::posix_time::minutes(15));
+				if (read_data())
+				{
+					parse_file("/tmp/weather.data");
+				}
 			}
 		}
-		bool gen_data()
+		bool read_data()
 		{
-			system("../../fetch_weather/fetch_weather.py > /tmp/weather.data");
-			return access("/tmp/weather.data", W_OK) == 0;
+			struct stat buf;
+			if (0 != stat("/tmp/weather_updata_notify", &buf))
+			{
+				return false;
+			}
+			static time_t last_update_time = 0;
+			if (last_update_time < buf.st_mtim.tv_sec)
+			{
+				last_update_time = buf.st_ctim.tv_sec;
+				return true;
+			}
+			return false;
 		}
 	private:
 		weather_info_list_t weather_list_;

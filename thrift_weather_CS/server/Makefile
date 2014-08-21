@@ -1,10 +1,10 @@
 
 target = server
 gencpp = ../gen-cpp/
-CPPFLAGS = -I$(gencpp)
+CPPFLAGS = -I$(gencpp) -g
 objects = $(gencpp)weatherCS_constants.o $(gencpp)weather.o weather_server.o $(gencpp)weatherCS_types.o
 server : $(objects)
-	g++ -o $(target) -lthrift -lboost_thread-mt $(objects)
+	g++ $(CPPFLAGS) -o $(target) -lthrift -lboost_thread-mt $(objects)
 	
 # pull in dependency info for *existing* .o files
 -include $(objects:.o=.d)

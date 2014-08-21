@@ -1,10 +1,13 @@
 #/bin/sh
 
-fetch="./fetch_weather.py"
+base_dir=$(cd "$(dirname "$0")"; pwd)
+fetch=$base_dir/"fetch_weather.py"
 data="/tmp/weather.data"
 notify="/tmp/weather_updata_notify"
 is_parse="/tmp/weather_is_parse"
 
+echo $base_dir
+echo $fetch
 if [ ! -f $fetch ]; then
 	exit 0
 fi
@@ -18,7 +21,7 @@ do
 	fi
 	$fetch > $data
 	touch $notify
-	sleep 60
+	sleep 5
 done
 
 exit 0
