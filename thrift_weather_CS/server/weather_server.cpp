@@ -21,7 +21,6 @@ using namespace ::apache::thrift::transport;
 using namespace ::apache::thrift::server;
 
 using boost::shared_ptr;
-
 class weatherHandler : virtual public weatherIf {
 	public:
 		typedef std::vector<weather_info> weather_info_list_t;
