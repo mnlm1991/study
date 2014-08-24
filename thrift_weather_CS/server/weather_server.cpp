@@ -14,6 +14,7 @@
 #include <unistd.h>
 #include <sys/types.h>
 #include <sys/stat.h>
+#include <domob_log.h>
 
 using namespace ::apache::thrift;
 using namespace ::apache::thrift::protocol;
@@ -137,7 +138,18 @@ class weatherHandler : virtual public weatherIf {
 };
 
 int main(int argc, char **argv) {
-	int port = 9090;
+
+	domob_log_stat_t log_stat;
+	log_stat.level =  log4cpp::Priority::DEBUG;
+	log_stat.file_size = 10000;
+	log_stat.is_rollback = true;
+	log_stat.separate_time = 0;
+	if (domob_open_log("server", log_stat, true) < 0)
+	{
+		std::cout << "log init faild " << std::endl;
+	}
+	DOMOB_WRITE_DEBUG_LOG("test fatal error");
+	int port = 9999;
 	shared_ptr<weatherHandler> handler(new weatherHandler());
 	if (!handler->init()) 
 	{

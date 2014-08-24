@@ -1,10 +1,10 @@
 
 target = server
 gencpp = ../gen-cpp/
-CPPFLAGS = -I$(gencpp) -g
-objects = $(gencpp)weatherCS_constants.o $(gencpp)weather.o weather_server.o $(gencpp)weatherCS_types.o
+CPPFLAGS = -g -I$(gencpp) -I ~/domob/LIB/domob-lib/output/include/ -L ~/domob/LIB/domob-lib/output/lib/
+objects = $(gencpp)weatherCS_constants.o $(gencpp)weather.o weather_server.o $(gencpp)weatherCS_types.o main.o
 server : $(objects)
-	g++ $(CPPFLAGS) -o $(target) -lthrift -lboost_thread-mt $(objects)
+	g++ $(CPPFLAGS) -o $(target) -lthrift -lboost_thread $(objects) -llog4cpp  -ldomoblib
 	
 # pull in dependency info for *existing* .o files
 -include $(objects:.o=.d)
