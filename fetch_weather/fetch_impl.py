@@ -9,6 +9,7 @@
 
 # vim: set noexpandtab ts=4 sts=4 sw=4 :
 
+from __future__ import unicode_literals
 import urllib2
 import json
 import string
@@ -126,6 +127,7 @@ class FetchImpl:
 				weather = json.loads(content)
 				info = weather_info(self.getCityId(weather), self.getCityName(weather), self.getMaxTemp(weather), self.getMinTemp(weather))
 				info.write(proto)
+				log.info('fetch city[{}] success'.format(info.name))
 			except Exception, e:
 				log.warn('fetch url[{}] exception [{}]'.format(url, e))
 

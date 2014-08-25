@@ -6,7 +6,7 @@ import getopt
 from fetch_impl import FetchImpl
 
 def usage():
-	print 'Usage:%s [-h | --help] [(-c | --config=) config_file'.format(sys.argv[0])
+	print 'Usage:{} [-h | --help] [(-c | --config=) config_file]'.format(sys.argv[0])
 
 if __name__ == "__main__" :
 	try:
