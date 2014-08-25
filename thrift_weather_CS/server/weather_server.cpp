@@ -1,9 +1,5 @@
 
-#include "weather.h"
-#include <thrift/protocol/TBinaryProtocol.h>
-#include <thrift/server/TSimpleServer.h>
-#include <thrift/transport/TServerSocket.h>
-#include <thrift/transport/TBufferTransports.h>
+#include "weather_server.h"
 #include <iostream>
 #include <vector>
 #include <sstream>
@@ -15,13 +11,8 @@
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <domob_log.h>
+#include <adserver_read_config.h>
 
-using namespace ::apache::thrift;
-using namespace ::apache::thrift::protocol;
-using namespace ::apache::thrift::transport;
-using namespace ::apache::thrift::server;
-
-using boost::shared_ptr;
 class weatherHandler : virtual public weatherIf {
 	public:
 		typedef std::vector<weather_info> weather_info_list_t;
@@ -136,33 +127,4 @@ class weatherHandler : virtual public weatherIf {
 		boost::shared_ptr<boost::thread> update_thread_;
 		bool update_;
 };
-
-int main(int argc, char **argv) {
-
-	domob_log_stat_t log_stat;
-	log_stat.level =  log4cpp::Priority::DEBUG;
-	log_stat.file_size = 10000;
-	log_stat.is_rollback = true;
-	log_stat.separate_time = 0;
-	if (domob_open_log("server", log_stat, true) < 0)
-	{
-		std::cout << "log init faild " << std::endl;
-	}
-	DOMOB_WRITE_DEBUG_LOG("test fatal error");
-	int port = 9999;
-	shared_ptr<weatherHandler> handler(new weatherHandler());
-	if (!handler->init()) 
-	{
-		std::cout << "初始化失败" << std::endl;
-		return 0;
-	}
-	shared_ptr<TProcessor> processor(new weatherProcessor(handler));
-	shared_ptr<TServerTransport> serverTransport(new TServerSocket(port));
-	shared_ptr<TTransportFactory> transportFactory(new TBufferedTransportFactory());
-	shared_ptr<TProtocolFactory> protocolFactory(new TBinaryProtocolFactory());
-
-	TSimpleServer server(processor, serverTransport, transportFactory, protocolFactory);
-	server.serve();
-	return 0;
-}
 
