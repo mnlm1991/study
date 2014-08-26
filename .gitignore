@@ -1,0 +1,5 @@
+*.o
+*.swp
+*.d
+gen-cpp
+gen-py
